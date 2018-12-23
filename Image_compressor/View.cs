@@ -282,7 +282,7 @@ namespace Image_compressor
         private void show_blocks_button_Click(object sender, EventArgs e)
         {
             controller.showBlocks();
-            // BUG: если слишком быстро жать на кнопку при BlockSize=2, то резульат может содержать "дыры"
+            // BUG: если слишком быстро жать на кнопку при BlockSize=2, то результат может содержать "дыры"
         }
     }
 }

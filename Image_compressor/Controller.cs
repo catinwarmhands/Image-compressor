@@ -11,9 +11,6 @@ using System.Drawing.Imaging;
 using System.Threading.Tasks;
 using System.Diagnostics;
 
-//TODO
-//степерь отклонения mse и psnr
-
 
 namespace Image_compressor
 {
