@@ -22,28 +22,50 @@ namespace Image_compressor
 
         public static void RGB_to_HSV(float r, float g, float b, out float h, out float s, out float v)
         {
-            r /= 255;
-            g /= 255;
-            b /= 255;
-            float mx = Math.Max(r, Math.Max(g, b));
-            float mn = Math.Min(r, Math.Min(g, b));
-            float df = mx - mn;
-            if (mx == mn)
-                h = 0;
-            else if (mx == r)
-                h = (60 * ((g - b) / df) + 360) % 360;
-            else if (mx == g)
-                h = (60 * ((b - r) / df) + 120) % 360;
-            else
-                h = (60 * ((r - g) / df) + 240) % 360;
-            if (mx == 0)
+            r /= 255.0f;
+            g /= 255.0f;
+            b /= 255.0f;
+
+            // h:0-360.0, s:0.0-1.0, v:0.0-1.0
+
+            float max = Math.Max(r, Math.Max(g, b));
+            float min = Math.Min(r, Math.Min(g, b));
+
+            v = max;
+
+            if (max == 0.0f)
+            {
                 s = 0;
+                h = 0;
+            }
+            else if (max - min == 0.0f)
+            {
+                s = 0;
+                h = 0;
+            }
             else
-                s = df / mx;
-            v = mx;
-            s *= 255f;
-            v *= 255f;
-            h = h / 360f * 255f;
+            {
+                s = (max - min) / max;
+
+                if (max == r)
+                {
+                    h = 60 * ((g - b) / (max - min)) + 0;
+                }
+                else if (max == g)
+                {
+                    h = 60 * ((b - r) / (max - min)) + 120;
+                }
+                else
+                {
+                    h = 60 * ((r - g) / (max - min)) + 240;
+                }
+            }
+
+            if (h < 0) h += 360.0f;
+
+            h /= 2;   // dst_h : 0-180
+            s *= 255; // dst_s : 0-255
+            v *= 255; // dst_v : 0-255
         }
 
         public static void YCbCr_to_RGB(float y, float cb, float cr, out float r, out float g, out float b)
@@ -69,26 +91,30 @@ namespace Image_compressor
 
         public static void HSV_to_RGB(float h, float s, float v, out float r, out float g, out float b)
         {
-            s /= 255f;
-            v /= 255f;
-            h = h / 255f * 360f;
-            float h60 = h / 60.0f;
-            float h60f = (float)Math.Floor((double)h60);
-            float hi = (int)h60f % 6;
-            float f = h60 - h60f;
-            float p = v * (1 - s);
-            float q = v * (1 - f * s);
-            float t = v * (1 - (1 - f) * s);
+            h *= 2.0f; // 0-360
+            s /= 255.0f; // 0.0-1.0
+            v /= 255.0f; // 0.0-1.0
             r = g = b = 0;
-            if (hi == 0) { r = v; g = t; b = p; }
-            else if (hi == 1) { r = q; g = v; b = p; }
-            else if (hi == 2) { r = p; g = v; b = t; }
-            else if (hi == 3) { r = p; g = q; b = v; }
-            else if (hi == 4) { r = t; g = p; b = v; }
-            else if (hi == 5) { r = v; g = p; b = q; }
-            r *= 255;
-            g *= 255;
-            b *= 255;
+            
+            int hi = (int)(h / 60.0f) % 6;
+            float f = (h / 60.0f) - hi;
+            float p = v * (1.0f - s);
+            float q = v * (1.0f - s * f);
+            float t = v * (1.0f - s * (1.0f - f));
+
+            switch (hi)
+            {
+                case 0: r = v; g = t; b = p; break;
+                case 1: r = q; g = v; b = p; break;
+                case 2: r = p; g = v; b = t; break;
+                case 3: r = p; g = q; b = v; break;
+                case 4: r = t; g = p; b = v; break;
+                case 5: r = v; g = p; b = q; break;
+            }
+
+            r *= 255; // dst_r : 0-255
+            g *= 255; // dst_r : 0-255
+            b *= 255; // dst_r : 0-255
         }
 
         //перевести Image в float[], в котором будут лежать RGB данные
